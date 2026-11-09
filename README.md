@@ -1,6 +1,6 @@
-# Beeran's Outlook Tools
+# Email Workbench
 
-**Version 2.4** &nbsp;·&nbsp; Windows Desktop App &nbsp;·&nbsp; Built with Python + customtkinter
+**Version 3.0** &nbsp;·&nbsp; Windows Desktop App &nbsp;·&nbsp; Built with Python + customtkinter
 
 > *Direct, powerful control over your Microsoft Outlook inbox — no cloud accounts, no Azure registrations, no subscriptions. Just a clean Windows app that talks straight to Outlook and gets things done.*
 
@@ -12,12 +12,12 @@ The app uses a **grouped sidebar navigation** with 6 sections, each containing r
 
 | Group | Sub-tabs | What it does |
 |-------|----------|-------------|
-| 📬 **Inbox** | Monitor · Follow-up Tracker · Bulk Archive · Account Archive · Search · Rules | Watch folders, track unanswered mail, clean up old emails, archive an entire account to .pst, search, manage native Outlook rules |
-| 📨 **Compose** | Templates · Out of Office | Save reusable email templates; set OOF auto-replies with internal + external messages |
-| 🧹 **Cleanup Email** | Bulk Email · Duplicate Emails · Email Size | Detect newsletters, remove duplicate messages, analyse mailbox size |
+| 📬 **Inbox** | Monitor · Follow-up Tracker · Bulk Archive · Account Archive · Attachment Router · Search · Rules | Watch folders, track unanswered mail, clean up old emails, archive an entire account to .pst, route attachments into subject-named network folders, search, manage native Outlook rules |
+| 📨 **Compose** | Templates · Out of Office · Signatures | Save reusable email templates; set OOF auto-replies with internal + external messages; preview and launch Outlook signatures for editing |
+| 🧹 **Cleanup Email** | Bulk Email · Duplicate Emails · Email Size · Folder Statistics | Detect newsletters, remove duplicate messages, analyze mailbox and folder size |
 | 👤 **Contacts** | Duplicate Contacts · Export / Import | Find and merge duplicate contacts; export or import via CSV |
 | 📅 **Calendar** | Daily Digest · Duplicate Calendar · Calendar Backup · Meeting Inspector · Meeting Organizer Recovery | Unread mail summary; detect and remove duplicate meetings; back up a calendar to .ics/.pst; diagnose meetings that keep reappearing; recreate meetings left showing a stale organizer |
-| 📎 **Utilities** | Attachments · Schedule · Folder Statistics · Log | Extract attachments, schedule automation, view folder stats, review event log |
+| 📎 **Utilities** | Attachments · Export to PDF · Log · Schedule | Extract attachments, export emails to PDF, review event log, schedule automation |
 | ⚙️ **Settings** | — | Theme, close-behaviour, Portable Version, and Run at Windows startup preferences |
 | 📘 **About** | — | Version info, third-party attributions, and proprietary license |
 | 🩺 **Diagnostics** | Accounts · Add-ins · System | Per-account health check (quota, sync activity, cloud-sync warnings), one-click repair for server-backed accounts, backup-file mount, add-in list with enable/disable, and system checks for duplicate processes and disk space |
@@ -45,10 +45,10 @@ The app opens on a **Welcome screen** — pick a group on the left to get starte
 4. The finished app lands at:
 
 ```
-dist\Beeran's Outlook Tools\Beeran's Outlook Tools.exe
+dist\Email Workbench\Email Workbench.exe
 ```
 
-The exe/folder name is intentionally version-less, so the install path (`C:\Beerans Outlook Tools\`) stays the same across every future version — only the app's internal version number (shown in the window title, sidebar, and About page) changes.
+The exe/folder name is intentionally version-less, so the install path (`%LocalAppData%\Programs\Email Workbench\`) stays the same across every future version — only the app's internal version number (shown in the window title, sidebar, and About page) changes.
 
 This is a **folder-based build** — the `.exe` sits next to a `_internal\` folder. Always copy the whole folder together.
 
@@ -57,7 +57,7 @@ This is a **folder-based build** — the `.exe` sits next to a `_internal\` fold
 ## 🚀 Getting Started
 
 1. Open **Microsoft Outlook** first
-2. Run `Beeran's Outlook Tools.exe`
+2. Run `Email Workbench.exe`
 3. The app auto-discovers all your accounts and folders
 4. Click any group in the left sidebar to get started
 5. Settings save automatically as you work
@@ -67,7 +67,7 @@ This is a **folder-based build** — the `.exe` sits next to a `_internal\` fold
 ## 📬 Inbox
 
 ### Monitor
-Watch up to **4 Outlook folders at once**, each with its own alert settings.
+Watch up to **10 Outlook folders at once**, each with its own alert settings.
 
 | Setting | Description |
 |---------|-------------|
@@ -88,7 +88,26 @@ Scans **Sent Items** for messages with no reply after a configurable number of d
 Move or delete many emails at once. Configure an account, source folder, destination folder, age threshold (days), and whether to include unread mail. A count preview appears before any action is taken.
 
 ### Account Archive
-Moves old items out of an **entire account** into a separate `.pst` archive file — frees up mailbox space, similar to Outlook's built-in Archive. Unlike Bulk Archive (one folder, email only), this covers any combination of Email, Calendar, Contacts, and Notes in a single pass, with one age threshold. Choose to create a new archive file or keep adding to an existing one. A per-type count preview and confirmation window appear before anything is moved — active recurring calendar series are always skipped, even if old.
+Moves old items out of an **entire account** into a separate `.pst` archive file — frees up mailbox space, similar to Outlook's built-in Archive. Unlike Bulk Archive (one folder, email only), this covers any combination of Email, Calendar, Contacts, and Notes in a single pass, with one age threshold. Choose to create a new archive file or keep adding to an existing one. Mail matches on either received or sent date, so folders filled with filed *sent* mail are archived correctly too, and any folder the scan couldn't read is called out by name instead of silently vanishing from the results.
+
+Two ways to run it:
+- **🔎 Scan** — the normal flow. Shows a per-type count preview, then opens a confirmation window; nothing is moved until you confirm there. Active recurring calendar series are always skipped, even if old.
+- **🗄 Archive Now** — skips the preview and confirmation window entirely and moves every matching item immediately. Use it once you trust the account/type/age settings above; there's no review step to catch a mistake.
+
+### Attachment Router
+Watches up to **10 Outlook folders at once** and routes every attachment each one receives into a subject-named folder on a network drive (a mapped drive letter or a UNC path), then moves the email itself into a Processed folder. A later reply or forward on the same email adds its attachments into that same network folder instead of creating a new one.
+
+| Setting | Description |
+|---------|-------------|
+| Account / Watch folder | Which mailbox and folder to monitor (one per card — add up to 10) |
+| Processed folder | Type a sub-folder name to auto-create it under the watch folder, or use **Pick Folder…** to point at any existing Outlook folder instead |
+| Network drive folder | Where subject-named folders are created |
+| Check every (sec) | How often the watched folders are checked for new mail (shared across all of them) |
+| Combine into Master PDF | Optionally also builds one growing PDF per subject, alongside the raw files — each folder has its own on/off toggle |
+
+**Matching logic:** first by Outlook's own `ConversationID` (survives a changed/shortened subject line); if that's not available yet, falls back to the subject with `RE:`/`FW:`/`FWD:` prefixes stripped, matched against folders already on the network drive; otherwise a new folder is created.
+
+> Raw attachment files are always saved either way. When Master PDF is on, Word/Excel/PowerPoint attachments get a real content preview (via the installed Office app, run hidden in the background) — anything else, or anything that fails to convert, gets a placeholder page instead. The original file is never lost to a failed preview.
 
 ### Search
 Full-text search (subject, sender, body) across one folder or an entire account, with timestamped results.
@@ -115,6 +134,9 @@ Save frequently-used email templates (name, subject, body). Open any template wi
 ### Out of Office
 Set your auto-reply messages for internal and external senders, with optional start/end dates and external audience control (all senders or contacts only). Settings are sent directly to Outlook — **the app does not need to stay open** for OOF to work. Requires an Exchange or Microsoft 365 account.
 
+### Signatures
+A launcher, not a WYSIWYG editor — Outlook signatures are Word-generated HTML with table layouts a simple text editor can't reproduce faithfully. Lists your existing signatures, previews any of them exactly as it will render (images included, via an in-app preview), and opens it in Word for actual editing. Falls back to opening the preview in your browser if the in-app preview component isn't installed.
+
 ---
 
 ## 🧹 Cleanup Email
@@ -140,7 +162,10 @@ Finds duplicate messages using configurable match criteria:
 Action on matches: Log only / Flag / Delete / Export. Optional scheduled scans.
 
 ### Email Size
-Analyses a folder and lists the largest emails by size, helping you identify what's consuming the most mailbox space.
+Analyzes a folder and lists the largest emails by size, helping you identify what's consuming the most mailbox space.
+
+### Folder Statistics
+At-a-glance summary of any folder: total emails, unread count and percentage, total size in MB, oldest and newest email dates, and date span. The Folder dropdown's first option, "All Folders (Entire Account)", scans every folder in the account in one pass and reports each folder's own size alongside a combined account-wide total — pick a specific folder instead for the usual single-folder (optionally with subfolders) view.
 
 ---
 
@@ -208,11 +233,17 @@ Full syntax and permission requirements: [Microsoft Learn — Remove-CalendarEve
 ### Attachments
 Extract attachments from any Outlook folder to a local path or another Outlook folder. Optionally move processed emails after extraction. Attachments are saved into sub-folders named after each email's subject.
 
+### Export to PDF
+Exports individual emails or an entire folder to PDF — one PDF per email, styled with a header and the email body, plus an attachment-list footer.
+
+| Setting | Description |
+|---------|-------------|
+| Scope | All emails in the folder, or a date range (calendar picker included) |
+| Additional filter | Subject or From contains text — applies regardless of scope, with a red "Filter Active" badge when set |
+| Options | List attachment names, save attachments to a subfolder, choose filename format, open the output folder when done |
+
 ### Schedule
 Run attachment extraction automatically on an interval and/or daily at a set time. Uses the same source/destination settings as the Attachments tab.
-
-### Folder Statistics
-At-a-glance summary of any folder: total emails, unread count and percentage, total size in MB, oldest and newest email dates, and date span.
 
 ### Log
 Live, timestamped record of every event — monitor checks, alerts, extractions, rule actions, scans, and errors.
@@ -255,7 +286,7 @@ Double-click the tray icon or click **Show** to restore; **Quit** to exit fully.
 
 - **Updating the app while it's running.** Replacing the app's files (or a "close running copies first" step in an installer) could fail, because a plain window-close is deliberately treated as "minimize to tray" rather than "exit" under the **On window close** setting above — so the process never actually went away and its files stayed locked. The app now protects against a second copy ever running at the same time (launching it again while it's already open just brings the existing window to the front), and supports a `--quit-for-update` command line flag that reliably closes a running copy — even one minimized in the tray with automation active — before an update replaces its files:
   ```
-  "Beeran's Outlook Tools.exe" --quit-for-update
+  "Email Workbench.exe" --quit-for-update
   ```
   Returns once the running copy has actually exited (or immediately if none was running), so a build or install script can run this as its own step right before copying in new files.
 - **An unattended reboot** (e.g. a Windows Update installing overnight) used to leave the app simply not running afterward, silently stranding every scheduled task until someone remembered to reopen it. Turning on **Run at Windows startup** above closes that gap — the app relaunches automatically, minimized to the tray, the next time you log in.
@@ -337,6 +368,8 @@ The compiled executable includes tamper/decompilation detection. If the app dete
 | `requirements.txt` | Python dependencies |
 | `outlook_tools.spec` | PyInstaller build configuration (onedir mode) |
 | `build.bat` | One-click Windows build script (4 steps: update pip → deps → pywin32 → build) |
+| `installer.iss` | Inno Setup installer script — per-user install, version pulled automatically from `monitor.py` |
+| `build_installer.bat` | One-click installer build script (runs ISCC.exe against `installer.iss`) |
 | `sounds\` | 20 bundled alert `.wav` files — must be present before building |
 | `icon.ico` | App/exe icon (multi-resolution) |
 | `logo.png` | Sidebar and Welcome-screen logo (transparent background) |
@@ -412,6 +445,10 @@ Use the **About** tab in the app to send a suggestion, or email:
 
 | Version | Highlights |
 |---------|------------|
+| **3.0** | Renamed the app from Beeran's Outlook Tools to **Email Workbench**, with a new logo/icon and a refreshed, lighter-blue content-pane look · added a new **Attachment Router** feature to Inbox — watches an Outlook folder, routes attachments into subject-named folders on a network drive (matching by ConversationID, falling back to normalized subject), moves processed email into a Processed sub-folder, and optionally combines every attachment for a subject into one growing Master PDF with real Word/Excel/PowerPoint previews · added `installer.iss` / `build_installer.bat` — a per-user Inno Setup installer with its version pulled automatically from `monitor.py`, so the app and the installer never drift out of sync |
+| **3.0** *(cont'd, still testing)* | Attachment Router now watches **up to 10 folders at once** (was 1), each with its own **Pick Folder…** button to choose an existing Outlook folder as the Processed destination instead of only typing a name, its own explanation of the Pick Folder.../auto-create choice right under the field, and its own **Combine into Master PDF** toggle (was one checkbox shared by every folder) · Monitor's folder limit raised from 4 to **10** · the "connecting to Outlook" status message on the Welcome page is now red so it stands out, matching the already-red error state (green is still used once it finishes connecting) |
+| **2.6** | Fixed Folder Statistics' description text not wrapping to a second line · moved Folder Statistics from the Utilities group to Cleanup Email, next to Email Size, since both analyze mailbox/folder size · fixed a pre-existing bug (found in a pre-build code review) where the on-screen Log tab silently stopped receiving new entries a few seconds after every launch |
+| **2.5** | Fixed a startup visual glitch where pre-built pages/sub-tabs briefly flashed on top of the Welcome screen right after opening the app · Folder Statistics gained an "All Folders (Entire Account)" option that scans every folder at once and reports each one's size plus a combined total · Account Archive's "entire account" mode no longer silently skips subfolders filled with filed sent mail (it now matches on received *or* sent date) and now lists any folder it couldn't scan instead of hiding it · added a new "🗄 Archive Now" button alongside the existing Scan/review flow, for archiving immediately with no preview step |
 | **2.4** | Single-instance protection — a second launch brings the already-running copy to the front instead of opening a confusing duplicate · new `--quit-for-update` command line flag lets an update process reliably close a running copy, even one minimized in the tray with automation active, before replacing this app's files · new "Run at Windows startup, minimized to the tray" Settings checkbox (off by default) so Inbox Monitor and scheduled automation come back on their own after an unattended reboot (e.g. a Windows Update) instead of staying stranded |
 | **2.3** | Faster perceived startup — right after the window opens, every tab and sub-tab is pre-built in small background chunks while the Welcome page shows "Please wait while we fully connect to Microsoft Outlook…", so the first click on any tab is usually already instant · the scanned account/folder list is now cached to config.json so the next launch can pre-build tabs with real data immediately instead of waiting on that launch's own live scan (the live scan still always runs and silently refreshes everything once done) · new "🔄 Rescan / Refresh Connection" button on the Welcome page to force a fresh full scan on demand, with its own working/done status message |
 | **2.2** | Fixes and refinements found testing the deployed v2.1 build. Meeting Organizer Recovery's detection now resolves each meeting's organizer (and the current account) to a real mailbox address rather than just comparing display names, so a same-name/rebuilt-mailbox case is caught correctly; added Browse All Meetings, a manual list-and-select fallback with an optional organizer filter, for when the automatic scan finds nothing · fixed a startup crash, and similar crashes from scheduled background scans (Daily Digest, Follow-up Tracker, duplicate email/contact scans, scheduled extraction), introduced by v2.1's lazy tab-loading speed-up, where the app could try to update a tab's contents before that tab had ever been opened that session · Meeting Inspector's subject field is now correctly optional, so Find with it left blank lists every meeting in the folder instead of refusing to search · the main window now reopens at the same size and screen position it was last closed at, instead of always resetting to a fixed centered size, and no longer renders oversized on a monitor running Windows display scaling above 100% |
@@ -425,6 +462,6 @@ Use the **About** tab in the app to send a suggestion, or email:
 
 ---
 
-*Beeran's Outlook Tools &nbsp;·&nbsp; © 2026 Beeran &nbsp;·&nbsp; All rights reserved*
+*Email Workbench &nbsp;·&nbsp; © 2026 Beeran &nbsp;·&nbsp; All rights reserved*
 
 **License:** Proprietary — free to use, no modification or redistribution. See `LICENSE.md` or the About tab in the app for the full license text.
